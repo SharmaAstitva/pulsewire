@@ -136,7 +136,7 @@ class TransformersProcessor(LiteProcessor):
     # 3-class model, so "neutral" is a real prediction (SST-2 models only
     # output positive/negative).
     SENTIMENT_MODEL = "cardiffnlp/twitter-roberta-base-sentiment-latest"
-    TOPIC_MODEL = "typeform/distilbart-mnli-12-3"
+    TOPIC_MODEL = "valhalla/distilbart-mnli-12-3"
 
     def __init__(self):
         from transformers import pipeline  # imported here: heavy, optional

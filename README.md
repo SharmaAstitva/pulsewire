@@ -78,7 +78,7 @@ than showing one twice. Duplicates reuse the original's analysis, which also sav
 |---|---|---|
 | Summary | `t5-small` (or an LLM via Groq if `GROQ_API_KEY` is set) | Extractive: leading sentences |
 | Sentiment | `cardiffnlp/twitter-roberta-base-sentiment-latest` (3 classes) | Lexicon scoring |
-| Topic | Zero-shot `typeform/distilbart-mnli-12-3` | Keyword scoring |
+| Topic | Zero-shot `valhalla/distilbart-mnli-12-3` | Keyword scoring |
 
 If the models fail to load, the pipeline falls back to `lite` instead of failing the run.
 
