@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Another Outlet</title>
+    <item>
+      <title>Nvidia unveils new AI chip, tech stocks surge to record high</title>
+      <link>https://another.example.org/nvidia-new-ai-chip</link>
+      <description>Chipmaker Nvidia revealed its newest AI processor on Tuesday.</description>
+      <pubDate>Sat, 24 Oct 2026 11:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Scientists discover new species of frog in Western Ghats rainforest</title>
+      <link>https://another.example.org/frog-species</link>
+      <description>Researchers announced the discovery of a new frog species in the Western Ghats.</description>
+      <pubDate>Sat, 24 Oct 2026 09:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

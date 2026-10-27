@@ -1,0 +1,5 @@
+[
+  {"name": "Sample News",   "url": "https://example.com/rss",         "category": "World", "authority": 0.9},
+  {"name": "Another Outlet", "url": "https://another.example.org/rss", "category": "World", "authority": 0.6},
+  {"name": "Broken Feed",   "url": "https://broken.example.net/rss",  "category": "World", "authority": 0.5}
+]

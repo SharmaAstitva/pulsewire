@@ -1,0 +1,35 @@
+# Local development: `docker compose up`
+#   1. "pipeline" fetches real news once (lite AI backend) into ./backend/data
+#   2. "api" serves it on http://localhost:8000
+#   3. "web" runs the frontend on http://localhost:5173
+services:
+  pipeline:
+    build: ./backend
+    command: python -m pipeline.run --ai lite
+    volumes:
+      - ./backend/data:/app/data
+
+  api:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/data:/app/data
+    environment:
+      CORS_ORIGINS: http://localhost:5173
+    depends_on:
+      pipeline:
+        condition: service_completed_successfully
+
+  web:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+    environment:
+      VITE_API_URL: http://localhost:8000
+    depends_on:
+      - api

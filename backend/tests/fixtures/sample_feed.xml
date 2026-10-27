@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+  <channel>
+    <title>Sample News</title>
+    <item>
+      <title>Nvidia unveils new AI chip as tech stocks surge to record high</title>
+      <link>https://example.com/tech/nvidia-ai-chip?utm_source=rss&amp;utm_medium=feed</link>
+      <description><![CDATA[<p>Nvidia on Tuesday unveiled a new artificial intelligence chip for data centres. The launch boosted tech stocks to a record high. Analysts expect strong growth for the company next year.</p> The post Nvidia unveils chip appeared first on Example.]]></description>
+      <pubDate>Sat, 24 Oct 2026 10:00:00 GMT</pubDate>
+      <media:content url="https://example.com/img/nvidia.jpg" medium="image"/>
+    </item>
+    <item>
+      <title>Floods kill dozens as heavy rain hits northern region, officials warn of crisis</title>
+      <link>https://example.com/world/floods</link>
+      <description><![CDATA[Heavy floods killed dozens of people and forced thousands from their homes. Officials warn the crisis could worsen. <img src="https://example.com/img/floods.jpg"/>]]></description>
+      <pubDate>Sat, 24 Oct 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>India beat Australia to win cricket World Cup final in Ahmedabad</title>
+      <link>https://example.com/sport/cricket-final</link>
+      <description>India won the cricket World Cup final, beating Australia by six wickets in front of a record crowd.</description>
+      <pubDate>Fri, 23 Oct 2026 18:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Short</title>
+      <link>https://example.com/too-short</link>
+      <description>Ignored because the title is too short.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Data (published to the `data` branch by the pipeline, never committed to main)
+backend/data/*.db
+backend/data/*.download
+
+# Node
+node_modules/
+dist/
+
+# Env & editors
+.env
+.env.local
+.vscode/
+.idea/
+.DS_Store

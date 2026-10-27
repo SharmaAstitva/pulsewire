@@ -1,0 +1,8 @@
+# API + pipeline ("lite" AI backend). Enough to run everything locally.
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.29
+sqlalchemy>=2.0.30,<3.0
+pydantic>=2.6,<3.0
+feedparser>=6.0.11
+beautifulsoup4>=4.12
+httpx>=0.27
