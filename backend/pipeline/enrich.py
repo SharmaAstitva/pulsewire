@@ -56,13 +56,19 @@ TOPIC_KEYWORDS = {
     "Health": "health hospital doctors disease virus vaccine cancer patients medical drug drugs "
               "mental covid outbreak who treatment nutrition diet",
     "Sports": "match cricket football soccer tennis olympic olympics league cup tournament player "
-              "players team coach win wins goal score ipl fifa nba championship",
+              "players team coach win wins goal goals score scored ipl fifa nba nfl mlb nhl championship "
+              "beat beats beaten defeat defeats defeated overtime playoff playoffs season quarterback "
+              "striker midfielder goalkeeper premier wicket wickets innings batsman bowler rugby golf "
+              "boxing ufc formula prix pole qualifying medal medals athlete athletics marathon squad "
+              "captain stadium semifinal wimbledon",
     "Entertainment": "film movie music album actor actress celebrity box office netflix series "
                      "show festival bollywood hollywood singer award awards",
     "World News": "war ukraine russia china israel gaza iran attack military killed troops border "
                   "refugees protest united nations un summit embassy",
 }
 _TOPIC_SETS = {topic: set(words.split()) for topic, words in TOPIC_KEYWORDS.items()}
+# feeds.json categories that differ from the topic names; the rest match as-is.
+FEED_CATEGORY_TOPICS = {"World": "World News"}
 
 POSITIVE = set(
     "win wins won success successful growth gain gains rise rises surge record breakthrough boost "
@@ -84,9 +90,14 @@ def _words(text: str) -> list[str]:
 class LiteProcessor:
     name = "lite"
 
-    def classify(self, title: str, text: str) -> dict[str, float]:
+    def classify(self, title: str, text: str, hint: str | None = None) -> dict[str, float]:
         words = _words(title) * 2 + _words(text)  # title counts double
         raw = {topic: sum(w in vocab for w in words) for topic, vocab in _TOPIC_SETS.items()}
+        # ponytail: the feed's category is a +1 nudge, i.e. weaker than one keyword in the
+        # title. It decides keyword-less stories ("Saka double sinks Chelsea") and ties only.
+        hint = FEED_CATEGORY_TOPICS.get(hint, hint)
+        if hint in raw:
+            raw[hint] += 1
         if not any(raw.values()):
             raw["World News"] = 1
         exps = {t: math.exp(v) for t, v in raw.items()}
@@ -110,8 +121,9 @@ class LiteProcessor:
     def summarize(self, title: str, text: str) -> str | None:
         return extractive_summary(text)
 
-    def process(self, title: str, text: str) -> Enrichment:
-        scores = self.classify(title, text)
+    def process(self, title: str, text: str, hint: str | None = None) -> Enrichment:
+        """`hint` is the feed's category (e.g. "Sports"); only the lite classifier uses it."""
+        scores = self.classify(title, text, hint)
         topics = list(scores)
         label, score = self.sentiment(f"{title}. {text}")
         return Enrichment(
@@ -146,7 +158,8 @@ class TransformersProcessor(LiteProcessor):
         self._sentiment = pipeline("sentiment-analysis", model=self.SENTIMENT_MODEL, device=-1)
         self._classifier = pipeline("zero-shot-classification", model=self.TOPIC_MODEL, device=-1)
 
-    def classify(self, title: str, text: str) -> dict[str, float]:
+    def classify(self, title: str, text: str, hint: str | None = None) -> dict[str, float]:
+        # The zero-shot model reads the story itself, so the feed hint is not needed here.
         result = self._classifier(f"{title}. {text[:600]}", config.TOPICS, multi_label=False)
         pairs = zip(result["labels"], result["scores"], strict=True)
         return {label: round(score, 4) for label, score in pairs}
@@ -172,8 +185,8 @@ class GroqSummaries:
         self.name = f"{inner.name}+groq"
         self._client = httpx.Client(timeout=30)
 
-    def process(self, title: str, text: str) -> Enrichment:
-        enrichment = self.inner.process(title, text)
+    def process(self, title: str, text: str, hint: str | None = None) -> Enrichment:
+        enrichment = self.inner.process(title, text, hint)
         if len(text) >= 200:
             try:
                 enrichment.summary = self._summarize(title, text) or enrichment.summary

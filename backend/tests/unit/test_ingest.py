@@ -21,6 +21,9 @@ def test_parse_feed_extracts_fields():
     assert article.content == "The bill passed on Monday."
     assert article.author == "Jane Doe"
     assert article.source == "Unit Feed" and article.source_authority == 0.7
+    assert article.source_category is None  # SOURCE has no category
+    [tagged] = parse_feed(xml, {**SOURCE, "category": "Sports"})
+    assert tagged.source_category == "Sports"
     assert len(article.url_hash) == 64
 
 

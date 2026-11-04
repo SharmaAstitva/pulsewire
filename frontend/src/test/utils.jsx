@@ -9,7 +9,7 @@ export function renderWithProviders(ui, { route = '/', path = '*' } = {}) {
   })
   const wrap = (node) => (
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[route]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter initialEntries={[route]}>
         <Routes>
           <Route path={path} element={node} />
         </Routes>

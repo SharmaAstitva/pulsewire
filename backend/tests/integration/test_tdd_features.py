@@ -1,8 +1,10 @@
-"""Integration tests written before the code (TDD cycles 1-3)."""
+"""Integration tests written before the code (TDD cycles 1-5)."""
+import json
+
 from sqlalchemy import select
 
 from app import database
-from app.models import Article, PipelineRun
+from app.models import Article, PipelineRun, Source
 from pipeline.enrich import LiteProcessor
 from tests.conftest import FIXTURES, fake_fetcher
 
@@ -42,10 +44,10 @@ def test_story_with_source_suffix_is_clustered(run_once, tmp_path):
 class FlakyProcessor(LiteProcessor):
     name = "flaky"
 
-    def process(self, title, text):
+    def process(self, title, text, hint=None):
         if "Floods" in title:
             raise RuntimeError("model crashed")
-        return super().process(title, text)
+        return super().process(title, text, hint)
 
 
 def test_enrichment_failure_falls_back_instead_of_failing_run(run_once):
@@ -79,3 +81,39 @@ def test_old_database_is_upgraded_in_place(tmp_path):
         assert {"enrich_failures", "duplicates", "duration_seconds"} <= columns
         assert conn.execute("SELECT COUNT(*) FROM pipeline_runs").fetchone()[0] == 1  # data kept
     database.get_engine().dispose()
+
+
+# ---- Cycle 4: the feed's category reaches the classifier as a hint
+class RecordingProcessor(LiteProcessor):
+    name = "recording"
+
+    def __init__(self):
+        self.hints = []
+
+    def process(self, title, text, hint=None):
+        self.hints.append(hint)
+        return super().process(title, text, hint)
+
+
+def test_feed_category_is_passed_to_the_processor(run_once):
+    processor = RecordingProcessor()
+    run_once(processor=processor)
+    assert processor.hints and set(processor.hints) == {"World"}  # every fixture feed is "World"
+
+
+# ---- Cycle 5: feeds removed or switched off in feeds.json stop showing as active sources
+def test_inactive_feed_is_marked_inactive(run_once, tmp_path):
+    run_once()
+    feeds = json.loads((FIXTURES / "feeds.json").read_text())
+    for feed in feeds:
+        if feed["name"] == "Broken Feed":
+            feed["active"] = False
+    edited = tmp_path / "feeds.json"
+    edited.write_text(json.dumps(feeds))
+
+    summary = run_once(feeds_path=edited)
+
+    assert summary["feeds_failed"] == 0
+    with database.SessionLocal() as db:
+        active = {s.name: s.is_active for s in db.scalars(select(Source)).all()}
+    assert active == {"Sample News": True, "Another Outlet": True, "Broken Feed": False}

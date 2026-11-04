@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
+import { ArticleImage } from './ArticleImage'
 
 function relTime(d) {
   try { return formatDistanceToNow(new Date(d), { addSuffix: true }) } catch { return '' }
@@ -30,21 +31,14 @@ export function ArticleCard({ article }) {
   return (
     <article className="flex flex-col group">
       {/* Image */}
-      <Link to={`/article/${article.id}`}
+      {/* Decorative duplicate of the headline link: hidden from screen readers and tab order */}
+      <Link to={`/article/${article.id}`} aria-hidden="true" tabIndex={-1}
         className="block overflow-hidden bg-paper-tint w-full mb-3 flex-shrink-0"
         style={{ height: '200px' }}>
-        {article.image_url ? (
-          <img
-            src={article.image_url}
-            alt={article.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-            onError={e => { e.currentTarget.style.display = 'none' }}
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-            <span className="font-display italic text-gray-300 text-2xl">{article.source?.[0] || '?'}</span>
-          </div>
-        )}
+        <ArticleImage
+          article={article}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+        />
       </Link>
 
       {/* Category + sentiment dot */}

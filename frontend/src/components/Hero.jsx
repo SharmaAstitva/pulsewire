@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { formatDistanceToNow } from 'date-fns'
+import { ArticleImage } from './ArticleImage'
 
 function fmt(d) {
   if (!d) return ''
@@ -39,16 +39,11 @@ export function Hero({ article, isLoading }) {
       {/* Full-bleed image with overlay */}
       <Link to={`/article/${article.id}`} className="block relative w-full h-[420px] overflow-hidden group">
         {/* Image */}
-        {article.image_url ? (
-          <img
-            src={article.image_url}
-            alt={article.title}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-            onError={e => { e.currentTarget.style.display = 'none' }}
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gray-300" />
-        )}
+        <ArticleImage
+          article={article}
+          showLabel={false}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+        />
 
         {/* Gradient overlay — dark at bottom */}
         <div className="absolute inset-0" style={{

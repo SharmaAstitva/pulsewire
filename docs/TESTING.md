@@ -1,12 +1,14 @@
 # Testing Strategy
 
-PulseWire has **107 automated tests**: 78 for the backend and 29 for the frontend. They run on every push
+PulseWire has **119 automated tests**: 85 for the backend and 34 for the frontend. They run on every push
 through GitHub Actions, and the build fails if backend coverage drops below 90%.
 
 | Suite | Unit | Integration | Coverage |
 |---|---|---|---|
-| Backend (pytest) | 48 | 30 | 96% of lines |
-| Frontend (Vitest + Testing Library) | 10 | 19 | 96% of lines |
+| Backend (pytest) | 53 | 32 | 96% of lines |
+| Frontend (Vitest + Testing Library) | 15 | 19 | 88% of lines |
+
+Frontend coverage is reported but not yet gated: the Navbar and Footer interactions are the gaps (see Roadmap).
 
 ## The two layers
 
@@ -16,8 +18,8 @@ whole backend unit suite runs in under a second.
 - Backend `tests/unit/`: text cleaning, URL normalisation, date parsing, image extraction, title cleaning,
   story clustering, trending maths, both AI backends (HuggingFace models replaced by stubs, the Groq API
   replaced by `httpx.MockTransport`), response schemas, and the rate limiter (with an injected fake clock).
-- Frontend `src/__tests__/unit/`: the debounce hook (fake timers), the API client's error handling, and the
-  article card.
+- Frontend `src/__tests__/unit/`: the debounce hook (fake timers), the API client's error handling, the
+  article card, and the image placeholder (missing image, broken image, colour per topic).
 
 **Integration tests** check that real pieces work together.
 
@@ -48,8 +50,19 @@ this was tested afterwards. Those tests are kept, but they are not counted as TD
 | 4 | A database created before a new column existed would crash the pipeline | Forward-only migration that adds missing columns |
 | 5 | Rate limiting was **silently not working**: 130 requests in a row all succeeded | Replaced slowapi with a small tested limiter (see below) |
 | 6 | After "Load more", switching topic kept showing the **previous topic's** stories | Reset the feed's pages when the category changes |
+| 7 | Sports results ("Lakers beat Celtics in overtime") were labelled **World News** by the lite classifier | Wider sports vocabulary |
+| 8 | Stories with no topic keywords ignored where they came from (a Guardian Sport story → World News) | The feed's category is passed through the pipeline as a +1 hint, weaker than a single title keyword |
+| 9 | A feed switched off in `feeds.json` still showed as an active source | Sources missing from the active feed list are marked inactive on the next run |
+| 10 | Stories without a photo, or with a broken one, showed a blank grey box | `ArticleImage` falls back to a topic-coloured placeholder naming the source |
 
-Cycles 1, 5 and 6 were real bugs that no manual testing had caught.
+Cycles 1, 5, 6, 7 and 8 were real bugs that no manual testing had caught.
+
+### A test that broke because time passed
+
+`test_cli.py` runs the real command-line pipeline, which uses the real clock. The fixture stories are dated
+24 Oct 2026, so once that date was more than 7 days old the pipeline correctly archived them as stale and
+the test failed, even though no code had changed. The fix was to give that subprocess a long retention
+window (`RETENTION_DAYS=36500`). Every other pipeline test already injects a fixed `now`.
 
 ### The rate-limiting bug
 

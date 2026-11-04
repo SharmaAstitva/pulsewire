@@ -1,5 +1,6 @@
 """The real command-line pipeline, fetching feeds over HTTP from a local server."""
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -15,8 +16,11 @@ BACKEND = Path(__file__).resolve().parents[2]
 
 
 def run_cli(*args):
+    # The CLI uses the real clock, but the fixture stories are dated Oct 2026. Without a
+    # long retention window they would be archived as "old" once that date is a week past.
+    env = {**os.environ, "RETENTION_DAYS": "36500"}
     return subprocess.run([sys.executable, "-m", "pipeline.run", *map(str, args)],
-                          cwd=BACKEND, capture_output=True, text=True, timeout=120)
+                          cwd=BACKEND, capture_output=True, text=True, timeout=120, env=env)
 
 
 def write_feeds(path, base_url, names):

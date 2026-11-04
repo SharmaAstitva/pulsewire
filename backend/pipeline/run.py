@@ -36,6 +36,10 @@ def _sync_sources(db, feeds: list[dict]) -> None:
         source.authority_score = float(feed.get("authority", 0.5))
         source.is_active = True
         db.add(source)
+    active_urls = {feed["url"] for feed in feeds}
+    for source in existing.values():
+        if source.url not in active_urls:  # removed or switched off in feeds.json
+            source.is_active = False
     db.flush()
 
 
@@ -109,11 +113,13 @@ def run_pipeline(feeds_path: Path | None = None, ai_backend: str | None = None,
             else:
                 backend_used = processor.name
                 try:
-                    enrichment = processor.process(raw.title, raw.content or raw.title)
+                    enrichment = processor.process(raw.title, raw.content or raw.title,
+                                                   hint=raw.source_category)
                 except Exception as exc:
                     # One bad article must not sink the run: fall back to rule-based analysis.
                     log.warning("Enrichment failed for %r, using lite fallback: %s", raw.title, exc)
-                    enrichment = fallback.process(raw.title, raw.content or raw.title)
+                    enrichment = fallback.process(raw.title, raw.content or raw.title,
+                                                  hint=raw.source_category)
                     backend_used = "lite-fallback"
                     run.enrich_failures += 1
                 article.summary = enrichment.summary

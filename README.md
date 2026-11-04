@@ -12,11 +12,14 @@ and adds AI summaries, sentiment and topics, all on 100% free infrastructure.
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-**[Live Demo](https://YOUR-APP.vercel.app)** · **[API Docs](https://YOUR-API.onrender.com/api/docs)** · **[Report a Bug](https://github.com/SharmaAstitva/pulsewire/issues)**
+**[Live Demo](https://pulsewire-eta.vercel.app)** · **[API Docs](https://pulsewire-api.onrender.com/api/docs)** · **[Report a Bug](https://github.com/SharmaAstitva/pulsewire/issues)**
 
-<!-- Add a screenshot or GIF of the app here: docs/screenshot.png -->
+<img src="docs/screenshot.png" alt="PulseWire front page" width="900">
+
+<sub>The API runs on Render's free tier and sleeps when idle, so the first load can take 30–60 seconds.</sub>
 
 </div>
 
@@ -24,7 +27,7 @@ and adds AI summaries, sentiment and topics, all on 100% free infrastructure.
 
 ## ✨ Features
 
-- **Automated ingestion** from 23 RSS sources (BBC, The Guardian, NPR, Al Jazeera, The Hindu, TechCrunch, Ars Technica and more), fetched in parallel every 3 hours
+- **Automated ingestion** from 22 RSS sources (BBC, The Guardian, NPR, Al Jazeera, The Hindu, TechCrunch, Ars Technica and more), fetched in parallel every 3 hours
 - **Story clustering:** when several outlets cover the same event, readers see it once, with a "covered by N sources" signal and links to every version
 - **AI enrichment:** 2–3 sentence summaries, three-class sentiment (positive, neutral, negative) and topic classification
 - **Trending score** that blends recency, source credibility, topic momentum and cross-outlet coverage
@@ -36,7 +39,7 @@ and adds AI summaries, sentiment and topics, all on 100% free infrastructure.
 
 ```mermaid
 flowchart LR
-    RSS[("23 RSS feeds")] --> GA
+    RSS[("22 RSS feeds")] --> GA
 
     subgraph GA["GitHub Actions · every 3 hours"]
         direction TB
@@ -78,7 +81,7 @@ than showing one twice. Duplicates reuse the original's analysis, which also sav
 |---|---|---|
 | Summary | `t5-small` (or an LLM via Groq if `GROQ_API_KEY` is set) | Extractive: leading sentences |
 | Sentiment | `cardiffnlp/twitter-roberta-base-sentiment-latest` (3 classes) | Lexicon scoring |
-| Topic | Zero-shot `valhalla/distilbart-mnli-12-3` | Keyword scoring |
+| Topic | Zero-shot `valhalla/distilbart-mnli-12-3` | Keyword scoring, nudged by the feed's category |
 
 If the models fail to load, the pipeline falls back to `lite` instead of failing the run.
 
@@ -97,13 +100,13 @@ score = 0.50 × recency      exponential decay, 12-hour half-life
 |---|---|
 | Pipeline | Python, feedparser, BeautifulSoup, HuggingFace Transformers, PyTorch (CPU) |
 | Backend | FastAPI, SQLAlchemy 2.0, SQLite, Pydantic |
-| Frontend | React 18, Vite, Tailwind CSS, TanStack Query, React Router |
+| Frontend | React 18, Vite 8, Tailwind CSS, TanStack Query, React Router 7 |
 | DevOps | GitHub Actions (CI + scheduled pipeline), Docker, Render, Vercel |
-| Quality | pytest, Vitest, React Testing Library, Ruff (107 tests, 96% coverage) |
+| Quality | pytest, Vitest, React Testing Library, Ruff (119 tests, TDD, 90% coverage gate in CI) |
 
 ## 🚀 Run it locally
 
-**Prerequisites:** Python 3.11+ and Node.js 20+
+**Prerequisites:** Python 3.11+ and Node.js 22.12+
 
 ```bash
 git clone https://github.com/SharmaAstitva/pulsewire.git
@@ -149,8 +152,8 @@ Interactive docs are served at `/api/docs`.
 
 ## 🧪 Testing
 
-**107 automated tests** (78 backend, 29 frontend), split into unit and integration layers, with 96% line
-coverage on both. New features and bug fixes were built test-first (TDD), which caught real bugs, including
+**119 automated tests** (85 backend, 34 frontend), split into unit and integration layers, with 96% line
+coverage on the backend (enforced at 90% in CI) and 88% on the frontend. New features and bug fixes were built test-first (TDD), which caught real bugs, including
 rate limiting that had silently stopped working. Details in [docs/TESTING.md](docs/TESTING.md).
 
 ```bash
@@ -170,8 +173,11 @@ faked. Everything runs offline with no API keys.
 3. **Deploy the API on Render:** New → Blueprint → select this repo (uses `render.yaml`). Set
    - `DATA_URL` = `https://raw.githubusercontent.com/SharmaAstitva/pulsewire/data/pulsewire.db`
    - `CORS_ORIGINS` = your Vercel URL
-4. **Deploy the frontend on Vercel:** import the repo, set the root directory to `frontend`, and set
-   `VITE_API_URL` to your Render URL.
+4. **Deploy the frontend on Vercel:** import the repo, choose *Import single project* for `frontend`
+   (not the multi-service option), and set `VITE_API_URL` to your Render URL with no trailing slash.
+
+Feeds can be switched off without deleting them by adding `"active": false` in `feeds.json`
+(Indian Express is disabled this way because it returns 403 to automated clients).
 
 > Note: GitHub pauses scheduled workflows in repositories with no activity for 60 days. Any commit re-enables it.
 
@@ -207,6 +213,8 @@ pulsewire/
 - [ ] Daily email digest of top stories
 - [ ] Named-entity pages (people, companies, places)
 - [ ] Migrate storage to PostgreSQL when traffic requires concurrent writes
+- [ ] Raise frontend coverage to 90% (Navbar and Footer interactions) and add it to the CI gate
+- [ ] End-to-end browser tests with Playwright against the live API
 
 ## 👤 Author
 

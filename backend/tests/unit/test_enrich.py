@@ -21,6 +21,34 @@ def test_lite_topic_classification():
     assert p.process("India win cricket final", "The team won the match.").topic_primary == "Sports"
 
 
+def test_lite_recognises_sports_stories_without_generic_keywords():
+    # Regression: sports results were labelled "World News" by the lite classifier.
+    p = LiteProcessor()
+    for title, text in [("Lakers beat Celtics in overtime thriller", "LeBron scored 30 points."),
+                        ("Verstappen takes pole at the Grand Prix", "Qualifying ended in rain.")]:
+        assert p.process(title, text).topic_primary == "Sports", title
+
+
+def test_lite_uses_feed_category_as_hint():
+    p = LiteProcessor()
+    title, text = "Saka double sinks Chelsea", "Arsenal moved top of the table."
+    assert p.process(title, text).topic_primary == "World News"  # no keywords: default
+    assert p.process(title, text, hint="Sports").topic_primary == "Sports"
+    assert p.process(title, text, hint="World").topic_primary == "World News"  # feed name -> topic
+
+
+def test_lite_hint_does_not_override_clear_keywords():
+    p = LiteProcessor()
+    story = p.process("Stock markets fall as inflation and interest rates rise", "Investors sold shares.",
+                      hint="Sports")
+    assert story.topic_primary == "Finance"
+
+
+def test_unknown_hint_is_ignored():
+    assert LiteProcessor().process("Saka double sinks Chelsea", "Arsenal top.", hint="Cooking")\
+        .topic_primary == "World News"
+
+
 def test_lite_sentiment_has_three_classes():
     p = LiteProcessor()
     assert p.sentiment("Floods killed dozens, officials warn of crisis")[0] == "negative"
@@ -60,6 +88,15 @@ def test_transformers_maps_model_labels():
     assert result.sentiment == "negative"
     assert make_transformers(label="positive").sentiment("x") == ("positive", 0.88)
     assert result.topic_primary == "Finance" and result.topic_secondary == "Politics"
+
+
+def test_transformers_and_groq_accept_hint():
+    # The ML classifier ignores the hint; it must just not break the shared call.
+    assert make_transformers().process("Rates rise", LONG_TEXT, hint="Sports").topic_primary == "Finance"
+    wrapper = GroqSummaries(LiteProcessor(), "key", "m")
+    wrapper._client = groq_client(lambda request: httpx.Response(500))
+    story = wrapper.process("Saka double sinks Chelsea", "Arsenal top.", hint="Sports")
+    assert story.topic_primary == "Sports"
 
 
 def test_transformers_only_summarises_long_text():

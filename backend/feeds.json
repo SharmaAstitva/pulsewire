@@ -12,7 +12,7 @@
   {"name": "NPR",               "url": "https://feeds.npr.org/1001/rss.xml",                          "category": "World",      "authority": 0.9},
   {"name": "Al Jazeera",        "url": "https://www.aljazeera.com/xml/rss/all.xml",                   "category": "World",      "authority": 0.85},
   {"name": "The Hindu",         "url": "https://www.thehindu.com/news/national/feeder/default.rss",   "category": "World",      "authority": 0.85},
-  {"name": "Indian Express",    "url": "https://indianexpress.com/feed/",                             "category": "World",      "authority": 0.8},
+  {"name": "Indian Express",    "url": "https://indianexpress.com/feed/",                             "category": "World",      "authority": 0.8, "active": false, "note": "Disabled: returns 403 to automated clients (anti-bot)"},
   {"name": "Times of India",     "url": "https://timesofindia.indiatimes.com/rssfeedstopstories.cms",  "category": "World",      "authority": 0.75},
   {"name": "CNBC",              "url": "https://www.cnbc.com/id/100003114/device/rss/rss.html",       "category": "Finance",    "authority": 0.85},
   {"name": "TechCrunch",        "url": "https://techcrunch.com/feed/",                                "category": "Technology", "authority": 0.85},

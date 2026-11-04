@@ -29,6 +29,7 @@ class RawArticle:
     published_at: datetime
     source: str
     source_authority: float = 0.5
+    source_category: str | None = None  # feeds.json category, used as a topic hint
 
 
 @dataclass
@@ -73,6 +74,7 @@ def parse_feed(raw: bytes | str, source: dict, max_items: int = 15) -> list[RawA
                 published_at=parse_date(entry),
                 source=source["name"],
                 source_authority=float(source.get("authority", 0.5)),
+                source_category=source.get("category"),
             )
         )
     return articles

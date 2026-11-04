@@ -21,13 +21,14 @@ describe('ArticleCard', () => {
     expect(screen.getByText(/3 sources/)).toBeInTheDocument()
   })
 
-  it('uses the image when there is one, otherwise a source initial', () => {
+  // The card image sits in a decorative (aria-hidden) link, hence `hidden: true`.
+  it('uses the image when there is one, otherwise a placeholder naming the source', () => {
     const { rerender } = renderWithProviders(
       <ArticleCard article={makeArticle({ title: 'With image', image_url: 'https://img.example/a.jpg' })} />,
     )
-    expect(screen.getByRole('img', { name: 'With image' })).toHaveAttribute('src', 'https://img.example/a.jpg')
-    rerender(<ArticleCard article={makeArticle({ image_url: null, source: 'Guardian' })} />)
-    expect(screen.queryByRole('img')).not.toBeInTheDocument()
-    expect(screen.getByText('G')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'With image', hidden: true })).toHaveAttribute('src', 'https://img.example/a.jpg')
+    rerender(<ArticleCard article={makeArticle({ title: 'No image', image_url: null, source: 'Guardian' })} />)
+    expect(screen.getByRole('img', { name: 'No image', hidden: true }).tagName).toBe('DIV')
+    expect(screen.getAllByText('Guardian').length).toBeGreaterThan(0)
   })
 })
